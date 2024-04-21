@@ -26,7 +26,7 @@ def montecarlo_01(g, nsim):
         integral += g(rnd.random())
     return integral/nsim
 
-# Integral Monte Carlo en el intervalo (0,inf)
+# integral Monte Carlo en el intervalo (0,inf)
 def montecarlo_inf(fun, nsim):
     ''' Funcion para el metodo de montecarlo en el intervalo [0, inf]
     '''
@@ -34,4 +34,33 @@ def montecarlo_inf(fun, nsim):
     for _ in range(nsim):
         u=rnd.random()
         integral+= fun(1/u-1)/(u**2)
+    return integral/nsim
+
+
+# integrales múltiples, 2 variables
+
+def montecarlo_01_2(fun, nsim):
+    ''' integral Monte Carlo en el intervalo (0,1)x(0,1)
+    '''
+    integral = 0
+    for _ in range(nsim):
+        integral += fun(rnd.random(), rnd.random())
+    return integral/nsim
+
+def montecarlo_ab_2(fun,a,b,c,d, nsim):
+    ''' integral Monte Carlo en el intervalo (a,b)x(c,d)
+    '''
+    integral = 0
+    for _ in range(nsim):
+        integral += fun(a + (b-a)*rnd.random(), c + (d-c)*rnd.random())
+    return integral*(b-a)*(d-c)/nsim
+
+def montecarlo_inf_2(g, nsim):
+    ''' integral Monte Carlo en el intervalo (0,inf)x(0,inf)
+    '''
+    integral=0
+    for _ in range(nsim):
+        u1=rnd.random()
+        u2=rnd.random()
+        integral+= g(1/u1-1, 1/u2-1)/((u1**2)*(u2**2))
     return integral/nsim
