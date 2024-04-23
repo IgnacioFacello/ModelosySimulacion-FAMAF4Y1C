@@ -64,3 +64,11 @@ def montecarlo_inf_2(g, nsim):
         u2=rnd.random()
         integral+= g(1/u1-1, 1/u2-1)/((u1**2)*(u2**2))
     return integral/nsim
+
+# variables discretas
+
+def dice_dn(n):
+    u = rnd.random()
+    for i in range(1,n+1):
+        if u <= i * 1/n:
+            return i
