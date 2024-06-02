@@ -1,4 +1,3 @@
-# %%
 from scipy.stats import norm, uniform, expon, gamma
 import numpy as np
 import matplotlib.pyplot as plt
@@ -132,4 +131,3 @@ for k, v in accs.items():
 
 plt.legend()
 plt.show()
-# %%
