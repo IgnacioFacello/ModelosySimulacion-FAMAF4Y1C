@@ -1,144 +1,154 @@
 # %%
+from scipy.stats import norm, uniform, expon, gamma
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import norm, uniform, expon, gamma
-from random import random, seed
 
-EQUID = np.arange(10_000, 500_001, 10_000) # Lista de 50 numeros equidistantes entre 0 y 500.000
-REAL = 1 - norm.cdf(3) # 1 - P(X <= 3)
+# ===================================== Auxiliares ===================================================
 
-# Densidad de X Normal estandar
-norm_dens_std = lambda x : (2*np.pi)**(-1/2) * np.exp(-((x)**2)/2)
+EQUID = np.arange(10_000, 500_001, 10_000)  # Lista de 50 numeros equidistantes entre 0 y 500.000
+REAL = 1 - norm.cdf(3)                      # Valor de P(X >= 3) con X ~ N(0,1)
 
-# Densidad de X Normal estandar (Modificada para el metodo de montecarlo)
-norm_dens_std_mod = lambda x : (2*np.pi)**(-1/2) * np.exp(-(((1/x) + 2)**2)/2) * x**(-2)
+# Funciones
+def muestras(dens, gen):
+    ''' Genera las 50 aproximaciones en el intervalo [0, 500.000]
+    ''' 
+    acc = {}
+    for i in EQUID:
+        aux = ejercicio1b(n=i, fun_imp=dens, fun_gen=gen)
+        acc[i] = round(aux,7)
+    return acc    
 
-def ejercicio1a(n):
-    ''' Aproximacion usando el metodo de montecarlo en [0,1]
-    '''
-    acc = 0
-    ys = uniform.rvs(size=n)
-    for y in ys:
-        acc += norm_dens_std_mod(y)
-    return acc/n
+# Variables aleatorias
+class Normal():
+    def generate(mu, sigma, size):
+        return [ n for n in norm.rvs(size=size, loc=mu, scale=sigma) ]
 
-# ============= ======   =========  =======       ==========  ==========    ====  ======= ==    ======  ====================
-def indicadora(y):
-    return 1 if y >= 3 else 0
+    def dens_prob(mu, sigma, y):      # mu media, sigma desv estandar
+        return (2 * np.pi * (sigma ** 2)) ** (-1/2) * np.exp(- ((y - mu) ** 2) / 2 * (sigma ** 2))
 
-def ejercicio1b(n, fun_imp, fun_gen):
-    ''' Metodo sampling de importancia para calcular P(X > 3)
-    '''
-    acc = 0
-    ys = fun_gen(n)
-    for y in ys:
-        acc += norm_dens_std(y) * indicadora(y) / fun_imp(y) 
-    return acc/n
+class Exponential():
+    def generate(lamda, size):
+        return [ e for e in expon.rvs(size=size, scale=1/lamda) ]
 
-def generarNormal_rechazo(): # Genera una Normal Estandar N(0,1)
-    while (True):
-        Y1 = - np.log(1 - random()) # Exponencial Lambda 1
-        Y2 = - np.log(1 - random()) # Exponencial Lambda 1
-        Y = Y2 - (((Y1 - 1) ** 2) / 2)
-        if (Y > 0):
-            if (random() <= 1/2):
-                return Y1
-            else:
-                return -Y1
-
-# Generadores de Y
-
-def normal_gen(mu, sigma, size):
-    # return [ sigma * n + mu for n in norm.rvs(size=size) ]
-    return [ generarNormal_rechazo() * sigma + mu for _ in range(size) ]
-
-def exponencial(lamda):
-    U = 1 - random()
-    return -np.log(U) / lamda
-    
-def exp_gen(lam, size):
-    # return [ n for n in expon.rvs(size=size, scale=1/lam) ]
-    return [ exponencial(lam) for _ in range(size) ]
-
-def gen_gamma(k, u): # k natural y u real > 0 
-    U = 1
-    for _ in range(k):
-        U *= 1 - random()
-    return - np.log(U) * u
-
-def gamma_gen(alfa, beta, size):
-    # return [ n for n in gamma.rvs(size=size, a=alfa, scale=beta)]
-    return [ gen_gamma(alfa, beta) for _ in range(size) ]
-
-# Densidad de distribuciones
-def normal_dens(mu, sigma, y): #mu media, sigma desv estandar
-    return (2 * np.pi * (sigma ** 2)) ** (-1/2) * np.exp(-((y - mu) ** 2) / 2 * (sigma ** 2))
-
-def exp_dens(lamda, y): #1/mu media
-    return lamda * np.exp(- lamda * y)
+    def dens_prob(lamda, y):          
+        return lamda * np.exp(-lamda * y)
 
 def fact(n):
     return n * fact(n-1) if n >= 1 else 1
 
-def gamma_dens(alfa, beta, y): # alfa debe ser natural
-    return 1/fact(alfa-1) * (beta ** (-alfa)) * (y ** (alfa - 1)) * np.exp(-y/beta)
+class Gamma():
+    def generate(alfa, beta, size):
+        return [ g for g in gamma.rvs(size=size, a=alfa, scale=beta) ]
 
-# Funcion de densidad fx/gy simplificada particulares
-opt_I = lambda y : np.exp(-4*y + 8)                             # norm_4_1
-opt_II = lambda y : 4 * np.exp((- 2 * (y ** 2) + y) / 4)        # exp_025
-opt_III = lambda y : (32 / (y ** 2)) * np.exp((y - y ** 2) / 2) # gamma_3_2
+    def dens_prob(alfa, beta, y):     # alfa debe ser natural
+        return 1/fact(alfa-1) * (beta ** (-alfa)) * (y ** (alfa - 1)) * np.exp(-y/beta)
 
-def muestras(dens, gen): 
-    acc = {}
-    for i in EQUID:
-        aux = ejercicio1b(n=i, 
-                        fun_imp=dens, 
-                        fun_gen=gen
-        )
-        acc[i] = round(aux,7)
-    return acc
+# ===================================== Ejercicio A ===================================================
 
+def ejercicio1a(n):
+    ''' Metodo de Monte Carlo en [0,1] para calcular P(X >= 3) con X ~ N(0,1)
+    '''
+    np.random.seed(1234)
+    acc = 0
+    ys = uniform.rvs(size=n)                # Muestra de n Uniformes U(0,1)
+    for y in ys:
+        acc += Normal.dens_prob(0, 1, 1/y + 2)/(y**2)
+    return acc/n
+
+# ===================================== Ejercicio B ===================================================
+
+def indicadora(y):
+    ''' Funcion Indicadora en (3, inf)
+    '''
+    if (y >= 3):
+        return 1
+    else:
+        return 0
+
+def ejercicio1b(n, fun_imp, fun_gen):       # Agregamos la entrada fun_gen para generalizar
+    ''' Metodo Importance Sampling para calcular P(X >= 3) con X ~ N(0,1)
+    '''
+    np.random.seed(1234)
+    acc = 0
+    ys = fun_gen(n)                         # Muestra de n variables Y
+    for y in ys:
+        acc += Normal.dens_prob(0, 1, y) * indicadora(y) / fun_imp(y)
+    return acc/n
+
+# ===================================== Graficas ===================================================
+
+## Generacion de aproximaciones
 # %%
-# Muestras generadas usando el metodo de montecarlo
+# Montecarlo
+print('Generando muestra usando Montecarlo Estandard... ')
 acc_mtc = {}
 for i in EQUID:
     aux = ejercicio1a(i)
     acc_mtc[i] = round(aux,6)
+print('Completado')
 
 # %%
-# Muestras con el metodo de Sampling de importancia y la funcion de importancia I
+# Importance Sampling: Normal
+print('Generando muestra usando IS: Normal 4, 1...')
 acc_impI = muestras(
-    lambda y : normal_dens(4, 1, y), 
-    lambda n : normal_gen(4, 1, n)
+    lambda y : Normal.dens_prob(4, 1, y), 
+    lambda n : Normal.generate(4, 1, n)
     )
+print('Completado')
 
 # %%
+# Importance Sampling: Exponencial
+print('Generando muestra usando IS: Exponencial 1/4...')
 acc_impII = muestras(
-    lambda y : exp_dens(1/4, y),
-    lambda n : exp_gen(1/4, n)
+    lambda y : Exponential.dens_prob(1/4, y),
+    lambda n : Exponential.generate(1/4, n)
     )
+print('Completado')
 
 # %%
+# Importance Sampling: Gamma
+print('Generando muestra usando IS: Gamma 3, 2...')
 acc_impIII = muestras(
-    lambda y : gamma_dens(3, 2, y), 
-    lambda n : gamma_gen(3, 2, n)
+    lambda y : Gamma.dens_prob(3, 3, y), 
+    lambda n : Gamma.generate(3, 3, n)
     )
+print('Completado')
 
 # %%
-# Graficas
-def plot_aproximation(acc, name):
-    plt.plot(acc.keys(), acc.values(), label=name)
-
+# Grafica Comparativa
 plt.figure(figsize=(20,8))
 plt.xticks(EQUID, rotation=45)
-plt.plot([1000,500_000],[REAL,REAL], label='Real')
+plt.plot([10_000,500_000],[REAL,REAL], label='Real')
 
-plot_aproximation(acc_mtc, 'Control')
-plot_aproximation(acc_impI, 'Imp I')
-plot_aproximation(acc_impII, 'Imp II')
-plot_aproximation(acc_impIII, 'Imp III')
+accs = {
+    'Control': acc_mtc,
+    'Imp I': acc_impI,
+    'Imp II': acc_impII,
+    'Imp III': acc_impIII,
+}
+
+for k, v in accs.items():
+    plt.plot(v.keys(), v.values(), label=k)
 
 plt.legend()
 plt.show()
 
+# %%
+# Grafica Comparativa
+plt.figure(figsize=(20,8))
+plt.xticks(EQUID, rotation=45)
+# plt.plot([10_000,500_000],[REAL,REAL], label='Real')
+
+accs = {
+    'Control': { k: abs(y - REAL) for k, y in acc_mtc.items() },
+    'Imp I': { k: abs(y - REAL) for k, y in acc_impI.items() },
+    'Imp II': { k: abs(y - REAL) for k, y in acc_impII.items() },
+    'Imp III': { k: abs(y - REAL) for k, y in acc_impIII.items() },
+}
+
+for k, v in accs.items():
+    plt.plot(v.keys(), v.values(), label=k)
+
+plt.legend()
+plt.show()
 # %%
