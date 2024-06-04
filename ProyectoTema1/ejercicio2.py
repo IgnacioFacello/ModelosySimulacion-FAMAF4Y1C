@@ -1,3 +1,4 @@
+# %%
 from scipy.stats import norm, uniform, expon, gamma
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,10 +7,10 @@ import matplotlib.pyplot as plt
 
 # Constantes
 EQUID = np.arange(10_000, 500_001, 10_000)  # Lista de 50 numeros equidistantes entre 0 y 500.000
-REAL = 1 - norm.cdf(3)                      # Valor de P(X >= 3) con X ~ N(0,1)
-NORMAL_MU, NORMAL_SIGMA = 4, 1
-EXP_LAMBDA = 1/4
-GAMMA_ALFA, GAMMA_BETA = 4, 1
+REAL = 1 - gamma(a=9, scale=0.5).cdf(10)    # Valor de P(S >= 10) con S ~ Gamma(9, 1/2)
+NORMAL_MU, NORMAL_SIGMA = 11, 1
+EXP_LAMBDA = 1/11
+GAMMA_ALFA, GAMMA_BETA = 11, 1
 SEED = 1234
 
 # Variables aleatorias
@@ -36,37 +37,37 @@ class Gamma():
 
     def dens_prob(alfa, beta, y):           # alfa debe ser natural
         return 1/fact(alfa-1) * (beta ** (-alfa)) * (y ** (alfa - 1)) * np.exp(-y/beta)
-
+    
 # ===================================== Ejercicio A ===================================================
 
-def ejercicio1a(n):
-    ''' Metodo de Monte Carlo en [0,1] para calcular P(X >= 3) con X ~ N(0,1)
+def ejercicio2a(n):
+    ''' Metodo de Monte Carlo en [0,1] para calcular P(S >= 10) con S ~ Gamma(9, 1/2)
     '''
     np.random.seed(SEED)
     acc = 0
     ys = uniform.rvs(size=n)                # Muestra de n Uniformes U(0,1)
     for y in ys:
-        acc += Normal.dens_prob(0, 1, 1/y + 2)/(y**2)
+        acc += Gamma.dens_prob(9, 1/2, 1/y + 9)/(y**2)
     return acc/n
 
 # ===================================== Ejercicio B ===================================================
 
 def indicadora(y):
-    ''' Funcion Indicadora en (3, inf)
+    ''' Funcion Indicadora en (10, inf)
     '''
-    if (y >= 3):
+    if (y >= 10):
         return 1
     else:
         return 0
 
-def ejercicio1b(n, fun_imp, fun_gen):       # Agregamos la entrada fun_gen para generalizar
-    ''' Metodo Importance Sampling para calcular P(X >= 3) con X ~ N(0,1)
+def ejercicio2b(n, fun_imp, fun_gen):       # Agregamos la entrada fun_gen para generalizar
+    ''' Metodo Importance Sampling para calcular P(S >= 10) con S ~ Gamma(9, 1/2)
     '''
     np.random.seed(SEED)
     acc = 0
     ys = fun_gen(n)                         # Muestra de n variables Y
     for y in ys:
-        acc += Normal.dens_prob(0, 1, y) * indicadora(y) / fun_imp(y)
+        acc += Gamma.dens_prob(9, 1/2, y) * indicadora(y) / fun_imp(y)
     return acc/n
 
 # ===================================== Graficas ===================================================
@@ -76,7 +77,7 @@ def ejercicio1b(n, fun_imp, fun_gen):       # Agregamos la entrada fun_gen para 
 print('Generando muestra usando Montecarlo Estandar... ')
 acc_mtc = {}
 for i in EQUID:
-    aux = ejercicio1a(i)
+    aux = ejercicio2a(i)
     acc_mtc[i] = round(aux, 6)
 print('Completado')
 
@@ -86,7 +87,7 @@ def muestras(dens, gen):
     ''' 
     acc = {}
     for i in EQUID:
-        aux = ejercicio1b(n=i, fun_imp=dens, fun_gen=gen)
+        aux = ejercicio2b(n=i, fun_imp=dens, fun_gen=gen)
         acc[i] = round(aux, 6)
     return acc    
 
@@ -115,19 +116,24 @@ acc_impIII = muestras(
 print('Completado')
 
 # Grafica Comparativa
-plt.figure(figsize=(20,8))
+# %%
+plt.figure(figsize=(40,8))
 plt.xticks(EQUID, rotation=45)
-plt.plot([10_000,500_000],[REAL,REAL], label='Real')
+# plt.plot([EQUID[0],EQUID[-1]],[REAL,REAL], label='Real')
+
+WIDTH = 1000
 
 accs = {
-    'Control': acc_mtc,
-    'Imp I': acc_impI,
-    'Imp II': acc_impII,
-    'Imp III': acc_impIII,
+    'Control': { k: np.abs(v - REAL) for k, v in acc_mtc.items() },
+    'Normal': { k+WIDTH * 1/5: np.abs(v - REAL) for k, v in acc_impI.items() },
+    'Expon': { k+WIDTH * 2/5: np.abs(v - REAL) for k, v in acc_impII.items() },
+    'Gamma': { k+WIDTH * 3/5: np.abs(v - REAL) for k, v in acc_impIII.items() },
 }
 
 for k, v in accs.items():
-    plt.plot(v.keys(), v.values(), label=k)
+    plt.bar(v.keys(), v.values(), label=k, width=WIDTH/5)
 
+plt.grid()
+plt.tight_layout()
 plt.legend()
 plt.show()

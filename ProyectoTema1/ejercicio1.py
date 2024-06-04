@@ -1,26 +1,139 @@
+# %%
+from scipy.stats import norm, uniform, expon, gamma
 import numpy as np
-import scipy as scp
 import matplotlib.pyplot as plt
-import random as rnd
 
-REAL = 0.0013
+# ===================================== Auxiliares ===================================================
 
-f = lambda y : (2*scp.pi)**(-1/2) * scp.exp(-(((1/y) + 2)**2)/2) * y**(-2)
+# Constantes
+EQUID = np.arange(10_000, 500_001, 10_000)  # Lista de 50 numeros equidistantes entre 0 y 500.000
+REAL = 1 - norm.cdf(3)                      # Valor de P(X >= 3) con X ~ N(0,1)
+NORMAL_MU, NORMAL_SIGMA = 4, 1
+EXP_LAMBDA = 1/4
+GAMMA_ALFA, GAMMA_BETA = 4, 1
+SEED = 1234
+
+# Variables aleatorias
+class Normal():
+    def generate(mu, sigma, size):
+        return [ n for n in norm.rvs(size=size, loc=mu, scale=sigma) ]
+
+    def dens_prob(mu, sigma, y):            # mu media, sigma desv estandar
+        return (2 * np.pi * (sigma ** 2)) ** (-1/2) * np.exp(- ((y - mu) ** 2) / 2 * (sigma ** 2))
+
+class Exponential():
+    def generate(lamda, size):
+        return [ e for e in expon.rvs(size=size, scale=1/lamda) ]
+
+    def dens_prob(lamda, y):          
+        return lamda * np.exp(-lamda * y)
+
+def fact(n):
+    return n * fact(n-1) if n >= 1 else 1
+
+class Gamma():
+    def generate(alfa, beta, size):
+        return [ g for g in gamma.rvs(size=size, a=alfa, scale=beta) ]
+
+    def dens_prob(alfa, beta, y):           # alfa debe ser natural
+        return 1/fact(alfa-1) * (beta ** (-alfa)) * (y ** (alfa - 1)) * np.exp(-y/beta)
+
+# ===================================== Ejercicio A ===================================================
 
 def ejercicio1a(n):
-    ''' Metodo de montecarlo en [0,1]
+    ''' Metodo de Monte Carlo en [0,1] para calcular P(X >= 3) con X ~ N(0,1)
     '''
+    np.random.seed(SEED)
     acc = 0
-    for _ in range(n):
-        acc += f(rnd.random())
+    ys = uniform.rvs(size=n)                # Muestra de n Uniformes U(0,1)
+    for y in ys:
+        acc += Normal.dens_prob(0, 1, 1/y + 2)/(y**2)
     return acc/n
 
-equid = np.arange(0,500_001,10_000)[1:]
-acc = {}
-for i in equid:
-    acc[i] = ejercicio1a(i)
-    print(f"n: {i:7} val: {acc[i]:.2}")
+# ===================================== Ejercicio B ===================================================
 
-plt.plot([0,500_000],[REAL,REAL])
-plt.plot(acc.keys, acc.values)
+def indicadora(y):
+    ''' Funcion Indicadora en (3, inf)
+    '''
+    if (y >= 3):
+        return 1
+    else:
+        return 0
+
+def ejercicio1b(n, fun_imp, fun_gen):       # Agregamos la entrada fun_gen para generalizar
+    ''' Metodo Importance Sampling para calcular P(X >= 3) con X ~ N(0,1)
+    '''
+    np.random.seed(SEED)
+    acc = 0
+    ys = fun_gen(n)                         # Muestra de n variables Y
+    for y in ys:
+        acc += Normal.dens_prob(0, 1, y) * indicadora(y) / fun_imp(y)
+    return acc/n
+
+# ===================================== Graficas ===================================================
+
+# Generacion de aproximaciones
+# Montecarlo
+print('Generando muestra usando Montecarlo Estandar... ')
+acc_mtc = {}
+for i in EQUID:
+    aux = ejercicio1a(i)
+    acc_mtc[i] = round(aux, 6)
+print('Completado')
+
+# Funcion para generar aproximaciones
+def muestras(dens, gen):
+    ''' Genera las 50 aproximaciones en el intervalo [0, 500.000]
+    ''' 
+    acc = {}
+    for i in EQUID:
+        aux = ejercicio1b(n=i, fun_imp=dens, fun_gen=gen)
+        acc[i] = round(aux, 6)
+    return acc    
+
+# Importance Sampling: Normal
+print(f'Generando muestra usando IS: Normal {NORMAL_MU}, {NORMAL_SIGMA}...')
+acc_impI = muestras(
+    lambda y : Normal.dens_prob(NORMAL_MU, NORMAL_SIGMA, y), 
+    lambda n : Normal.generate(NORMAL_MU, NORMAL_SIGMA, n)
+    )
+print('Completado')
+
+# Importance Sampling: Exponencial
+print(f'Generando muestra usando IS: Exponencial {EXP_LAMBDA}...')
+acc_impII = muestras(
+    lambda y : Exponential.dens_prob(EXP_LAMBDA, y),
+    lambda n : Exponential.generate(EXP_LAMBDA, n)
+    )
+print('Completado')
+
+# Importance Sampling: Gamma
+print(f'Generando muestra usando IS: Gamma {GAMMA_ALFA}, {GAMMA_BETA}...')
+acc_impIII = muestras(
+    lambda y : Gamma.dens_prob(GAMMA_ALFA, GAMMA_BETA, y), 
+    lambda n : Gamma.generate(GAMMA_ALFA, GAMMA_BETA, n)
+    )
+print('Completado')
+
+# %%
+# Grafica Comparativa
+plt.figure(figsize=(40,8))
+plt.xticks(EQUID, rotation=45)
+# plt.plot([EQUID[0],EQUID[-1]],[REAL,REAL], label='Real')
+
+WIDTH = 1000
+
+accs = {
+    'Control': { k: np.abs(v - REAL) for k, v in acc_mtc.items() },
+    'Normal': { k+WIDTH * 1/5: np.abs(v - REAL) for k, v in acc_impI.items() },
+    'Expon': { k+WIDTH * 2/5: np.abs(v - REAL) for k, v in acc_impII.items() },
+    'Gamma': { k+WIDTH * 3/5: np.abs(v - REAL) for k, v in acc_impIII.items() },
+}
+
+for k, v in accs.items():
+    plt.bar(v.keys(), v.values(), label=k, width=WIDTH/5)
+
+plt.grid()
+plt.tight_layout()
+plt.legend()
 plt.show()
