@@ -2,6 +2,8 @@
 from scipy.stats import norm, uniform, expon, gamma
 import numpy as np
 import matplotlib.pyplot as plt
+import pylab 
+import time
 
 # ===================================== Auxiliares ===================================================
 
@@ -11,7 +13,10 @@ REAL = 1 - norm.cdf(3)                      # Valor de P(X >= 3) con X ~ N(0,1)
 NORMAL_MU, NORMAL_SIGMA = 4, 1
 EXP_LAMBDA = 1/4
 GAMMA_ALFA, GAMMA_BETA = 4, 1
-SEED = 1234
+SEED = 1567
+TIMES = 10
+
+np.random.seed(SEED)
 
 # Variables aleatorias
 class Normal():
@@ -43,7 +48,6 @@ class Gamma():
 def ejercicio1a(n):
     ''' Metodo de Monte Carlo en [0,1] para calcular P(X >= 3) con X ~ N(0,1)
     '''
-    np.random.seed(SEED)
     acc = 0
     ys = uniform.rvs(size=n)                # Muestra de n Uniformes U(0,1)
     for y in ys:
@@ -63,7 +67,6 @@ def indicadora(y):
 def ejercicio1b(n, fun_imp, fun_gen):       # Agregamos la entrada fun_gen para generalizar
     ''' Metodo Importance Sampling para calcular P(X >= 3) con X ~ N(0,1)
     '''
-    np.random.seed(SEED)
     acc = 0
     ys = fun_gen(n)                         # Muestra de n variables Y
     for y in ys:
@@ -72,68 +75,83 @@ def ejercicio1b(n, fun_imp, fun_gen):       # Agregamos la entrada fun_gen para 
 
 # ===================================== Graficas ===================================================
 
+T1 = time.perf_counter()
+
+# Funcion para generar aproximaciones
+def muestras(gen):
+    ''' Genera las 50 aproximaciones en el intervalo [0, 500.000]
+    ''' 
+    t1 = time.perf_counter()
+    C = 10_000
+    acc = {}
+    nsim = C
+    acc[nsim] = gen(C)*C
+    for i in range(2,51):
+        anterior, nsim = (i-1)*C, i*C
+        aux = 0
+        for k in range(TIMES):
+            aux += gen(C)*C
+        aux = aux / TIMES
+        acc[nsim] = acc[anterior] + aux
+    acc = { k: v/k for k,v in acc.items() }
+    t2 = time.perf_counter()
+    return acc, t2-t1
+
 # Generacion de aproximaciones
 # Montecarlo
 print('Generando muestra usando Montecarlo Estandar... ')
-acc_mtc = {}
-for i in EQUID:
-    aux = ejercicio1a(i)
-    acc_mtc[i] = round(aux, 6)
-print('Completado')
-
-# Funcion para generar aproximaciones
-def muestras(dens, gen):
-    ''' Genera las 50 aproximaciones en el intervalo [0, 500.000]
-    ''' 
-    acc = {}
-    for i in EQUID:
-        aux = ejercicio1b(n=i, fun_imp=dens, fun_gen=gen)
-        acc[i] = round(aux, 6)
-    return acc    
+mtc = lambda x : ejercicio1a(x)
+acc_mtc, t = muestras(mtc)
+print(f'Completado en {t} segundos')
 
 # Importance Sampling: Normal
 print(f'Generando muestra usando IS: Normal {NORMAL_MU}, {NORMAL_SIGMA}...')
-acc_impI = muestras(
-    lambda y : Normal.dens_prob(NORMAL_MU, NORMAL_SIGMA, y), 
-    lambda n : Normal.generate(NORMAL_MU, NORMAL_SIGMA, n)
-    )
-print('Completado')
+impI = lambda x : ejercicio1b(n=x, 
+            fun_imp=lambda y : Normal.dens_prob(NORMAL_MU, NORMAL_SIGMA, y), 
+            fun_gen=lambda n : Normal.generate(NORMAL_MU, NORMAL_SIGMA, n)
+            )
+acc_impI, t = muestras(impI)
+print(f'Completado en {t} segundos')
 
 # Importance Sampling: Exponencial
 print(f'Generando muestra usando IS: Exponencial {EXP_LAMBDA}...')
-acc_impII = muestras(
-    lambda y : Exponential.dens_prob(EXP_LAMBDA, y),
-    lambda n : Exponential.generate(EXP_LAMBDA, n)
-    )
-print('Completado')
+impII = lambda x: ejercicio1b(n=x,
+    fun_imp=lambda y : Exponential.dens_prob(EXP_LAMBDA, y),
+    fun_gen=lambda n : Exponential.generate(EXP_LAMBDA, n))
+acc_impII, t = muestras(impII)
+print(f'Completado en {t} segundos')
 
 # Importance Sampling: Gamma
 print(f'Generando muestra usando IS: Gamma {GAMMA_ALFA}, {GAMMA_BETA}...')
-acc_impIII = muestras(
-    lambda y : Gamma.dens_prob(GAMMA_ALFA, GAMMA_BETA, y), 
-    lambda n : Gamma.generate(GAMMA_ALFA, GAMMA_BETA, n)
+impIII = lambda x : ejercicio1b(n=x,
+    fun_imp=lambda y : Gamma.dens_prob(GAMMA_ALFA, GAMMA_BETA, y), 
+    fun_gen=lambda n : Gamma.generate(GAMMA_ALFA, GAMMA_BETA, n)
     )
-print('Completado')
+acc_impIII, t = muestras(impIII)
+print(f'Completado en {t} segundos')
 
+
+T2 = time.perf_counter()
+print(f'Timepo: {T2-T1} segundos')
 # %%
-# Grafica Comparativa
-plt.figure(figsize=(40,8))
+# Grafica Comparativa LINEAS
+plt.figure(figsize=(20,4), layout='tight')
 plt.xticks(EQUID, rotation=45)
-# plt.plot([EQUID[0],EQUID[-1]],[REAL,REAL], label='Real')
-
-WIDTH = 1000
+plt.yscale('log')
+plt.xlabel('Nro de Muestras')
+plt.ylabel('Distancia')
 
 accs = {
     'Control': { k: np.abs(v - REAL) for k, v in acc_mtc.items() },
-    'Normal': { k+WIDTH * 1/5: np.abs(v - REAL) for k, v in acc_impI.items() },
-    'Expon': { k+WIDTH * 2/5: np.abs(v - REAL) for k, v in acc_impII.items() },
-    'Gamma': { k+WIDTH * 3/5: np.abs(v - REAL) for k, v in acc_impIII.items() },
+    'Normal': { k: np.abs(v - REAL) for k, v in acc_impI.items() },
+    'Exponencial': { k: np.abs(v - REAL) for k, v in acc_impII.items() },
+    'Gamma': { k: np.abs(v - REAL) for k, v in acc_impIII.items() },
 }
 
 for k, v in accs.items():
-    plt.bar(v.keys(), v.values(), label=k, width=WIDTH/5)
+    plt.plot(v.keys(), v.values(), label=k)
 
 plt.grid()
-plt.tight_layout()
 plt.legend()
-plt.show()
+pylab.show()
+# plt.savefig('Ejercicio1.png')
