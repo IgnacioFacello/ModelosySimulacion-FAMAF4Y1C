@@ -50,6 +50,15 @@ def montecarlo_importance_sampling(nsim):
 
 ## Resultados
 
+Elegimos las siguientes distribuciones para analizar el algoritmo de Importance Sampling:
+- N ~ Normal(4, 1) 
+- E ~ Exponecial(1/4)
+- G ~ Gamma(4, 1)
+
+Para comparar la velocidad de convergencia entre los metodos, se realizaron 50 estimaciones con distintas cantidades de puntos de muestreo que van del 10mil a 500 mil con un incremento de 10mil por estimacion.
+Definimos una estimacion como: Ejecutar el algoritmo 10 veces para una misma cantidad de puntos de muestro y tomar el promedio sobre los valores obtenidos.
+En el siguiente grafico podemos observar la distancia entre dichas estimaciones y el valor real, calculado como el valor absoluto entre la diferencia de ambos. 
+
 ## Conclusiones
 
 
