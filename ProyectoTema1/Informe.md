@@ -11,7 +11,7 @@ El muestreo de importancia o Importance Sampling es una forma de hacer que las s
 La idea se centra en elegir una distribución diferente para muestrear puntos que pueda generar datos mas relevantes.
 
 Recordemos que Monte Carlo busca aproximar una expresion $\theta$, desconocida, sabiendo que este valor puede calcularse como $E[h(X)]$ para cierta variable aleatoria $X$ que posee una distribucion $F$. 
-Luego la teoría de Importance Sampling para **distribuciones continuas** se puede resumir en el siguiente resultado, teniendo en cuenta que $f_X$
+Luego la teoría de Importance Sampling se puede resumir en el siguiente resultado, teniendo en cuenta que $f_X$
 representa la funcion de densidad de una variable $X$ y $g_Y$ la funcion de densidad una variable $Y$. Denominamos a $f_X$ como la funcion objetivo y a $g_Y$ como la funcion de importancia. 
 
 $\theta 
@@ -26,36 +26,29 @@ Importance Sampling no siempre converge mas rapido que Monte Carlo. Para lograr 
 En este proyecto buscamos comparar el desempeño de Importance Sampling para distintas funciones de importancia entre si y con respecto a Monte Carlo para estimar $P(Z > 3)$ con $Z\sim\mathcal N(0,1)$ y $P(W > 10)$ con $W\sim\mathcal \Gamma\left(9, \frac12\right)$
 
 ## Algoritmo
-Se usaron las siguientes librerias: 
-- Scipy 
-- Numpy 
-- Pyplot
 
+Para el algoritmo nos basamos en la implementacion de Monte Carlo del apunte con ligeras modificaciones y en la justificacion teorica de Importance Sampling.
 
-Nos basamos en la implementacion del metodo de montecarlo de la guia teorica con ligeras modificaciones y el desarrollo hecho en la introduccion para implementar en codigo el metodo de importance sampling.
+Recordemos que en Monte Carlo, se genera una muestra de $n$ puntos de una variable uniforme continua $U\sim\mathcal U(0,1)$ y luego se evalua la expresion $h(t)f_X(t)$ para cada valor de la muestra. El promedio de las evaluaciones tiende a $\theta$.
 
-En una implementacion normal de montecarlo, se generan n valores de una variable uniforme continua $U\sim\mathcal U(0,1)$ y luego se evalua la expresion a estimar sobre ellos. El promedio de las evaluaciones va a tender al valor real de la expresion.
+Similarmente en el algoritmo, se genera una muestra de $n$ puntos de una variable aleatoria continua $Y$ y luego se evalua la expresion $\frac{h(t)f_X(t)}{g_Y(t)}$ para cada valor de la muestra. El promedio de las evaluaciones tiende a $\theta$.
 
- Se genera una muestra de n puntos de una variable aleatoria $Y$ mediante `Y()`.
-
-Luego evaluamos la expresion 
-
-Sean:
-- Y distribucion elegida para el sampling 
-- g_Y la funcion de densisad para la distribucion Y
-- f la funcion de densisad para la distribucion original
-- h la transformacion de montecarlo
+A continuacion presentamos el algoritmo de Importance Sampling. Sean:
+- `Y()` un generador de variables $Y$   
+- `g_Y` la funcion de densidad para la distribucion $Y$
+- `f_X` la funcion de densidad para la distribucion original $X$
+- `h` la transformacion de Monte Carlo
 
 ```python
-def montecarlo_importance_sampling(nsim):
+def importance_sampling(nsim):
     integral = 0
     for _ in range(nsim):
-        y # Variable aleatoria con dist Y
+        y = Y() # Variable aleatoria con dist Y
         integral += f(y) * h(y) / g_Y(y)
     return integral/nsim
 ```
 
-## Resultados
+## Resultados (Falta de Hacer)
 
 Elegimos las siguientes distribuciones para analizar el algoritmo de Importance Sampling:
 - N ~ Normal(4, 1) 
@@ -66,6 +59,6 @@ Para comparar la velocidad de convergencia entre los metodos, se realizaron 50 e
 Definimos una estimacion como: Ejecutar el algoritmo 10 veces para una misma cantidad de puntos de muestro y tomar el promedio sobre los valores obtenidos.
 En el siguiente grafico podemos observar la distancia entre dichas estimaciones y el valor real, calculado como el valor absoluto entre la diferencia de ambos. 
 
-## Conclusiones
+## Conclusiones (Falta de Hacer)
 
 
