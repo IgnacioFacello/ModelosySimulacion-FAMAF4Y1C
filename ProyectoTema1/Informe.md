@@ -6,34 +6,38 @@ Integrantes:
 https://www.youtube.com/watch?v=C3p2wI4RAi8
 
 ## Introduccion
-Los métodos tradicionales de integración por Monte Carlo no siempre son los más eficientes.
-El muestreo de importancia o Importance Sampling es una forma de hacer que las simulaciones de Monte Carlo converjan más rápido.
-La idea se centra en elegir una distribución diferente para muestrear puntos que pueda generar datos mas relevantes.
+Los métodos tradicionales de integración por el metodo de Monte Carlo no siempre son los más eficientes.
+El metodo de muestreo de importancia o Importance Sampling es una forma de hacer que las simulaciones de Monte Carlo converjan más rápido.
+La idea de mismo se centra en elegir una distribución diferente a la uniforme para muestrear puntos que pueda generar datos mas relevantes.
 
-Recordemos que Monte Carlo busca aproximar una expresion $\theta$, desconocida, sabiendo que este valor puede calcularse como $E[h(X)]$ para cierta variable aleatoria $X$ que posee una distribucion $F$. 
-Luego la teoría de Importance Sampling se puede resumir en el siguiente resultado, teniendo en cuenta que $f_X$
-representa la funcion de densidad de una variable $X$ y $g_Y$ la funcion de densidad una variable $Y$. Denominamos a $f_X$ como la funcion objetivo y a $g_Y$ como la funcion de importancia. 
+Recordemos que Monte Carlo busca aproximar una expresion $\theta$ desconocida, sabiendo que este valor puede calcularse como $E[h(X)]$ para cierta variable aleatoria $X$ que posee una distribucion $F$. 
+Luego la teoría detras de Importance Sampling se puede resumir en el siguiente resultado, teniendo en cuenta que $f_X$
+representa la funcion de densidad de una variable $X$ y $g_Y$ la funcion de densidad una variable $Y$. Denominamos a $f_X$ como la funcion **objetivo** y a $g_Y$ como la funcion de **importancia**. 
 
-$\theta 
-= E[h(X)] 
-= \int _{-\infty }^{\infty }h(t)f_X(t)dt 
-= \int _{-\infty }^{\infty }h(t)f_X(t)(\frac{g_Y(t)}{g_Y(t)})dt 
-= \int _{-\infty }^{\infty }\frac{h(t)f_X(t)}{g_Y(t)}g_Y(t)dt
-= E[\frac{h(Y)f_X(Y)}{g_Y(Y)}]$
+$$
+\begin{align}
+\theta &= E[h(X)] \\
+&= \int _{-\infty}^{\infty}h(t)f_X(t)dt \\
+&= \int _{-\infty}^{\infty}h(t)f_X(t)\left(\frac{g_Y(t)}{g_Y(t)}\right)dt \\
+&= \int _{-\infty}^{\infty}\frac{h(t)f_X(t)}{g_Y(t)}g_Y(t)dt\\
+&= E\left[\frac{h(Y)f_X(Y)}{g_Y(Y)}\right]\\
+\end{align}
+$$
 
-Importance Sampling no siempre converge mas rapido que Monte Carlo. Para lograr una mas rapida convergencia es importante elegir una distribucion $Y$ tal que $g_Y$ cumpla que $Var[\frac{h(Y)f_X(Y)}{g_Y(Y)}] < Var[h(X)].$ O equivalentemente, $g_Y(t)$ debe ser alto donde $|h(t)f_X(t)|$ sea alto. Por lo general no es sencillo encontrar una funcion $g_Y$ con esta propiedad.
+Cabe destacar que el metodo de Importance Sampling no siempre converge mas rapido que Monte Carlo y depende mucho de la funcion de importancia que se elija. 
+Para lograr una mas rapida convergencia es importante elegir una distribucion $Y$ tal que $g_Y$ cumpla que $Var\left[\frac{h(Y)f_X(Y)}{g_Y(Y)}\right] < Var[h(X)].$ O coloquialmente, $g_Y(t)$ debe ser alto donde $|h(t)f_X(t)|$ sea alto. Por lo general no es sencillo encontrar una funcion $g_Y$ con esta propiedad.
 
-En este proyecto buscamos comparar el desempeño de Importance Sampling para distintas funciones de importancia entre si y con respecto a Monte Carlo para estimar $P(Z > 3)$ con $Z\sim\mathcal N(0,1)$ y $P(W > 10)$ con $W\sim\mathcal \Gamma\left(9, \frac12\right)$
+El objetivo de este proyecto fue comparar el desempeño de Importance Sampling para distintas funciones de importancia entre si y con respecto a Monte Carlo tradicional para estimar $P(Z > 3)$ con $Z\sim\mathcal N(0,1)$ y $P(W > 10)$ con $W\sim\mathcal \Gamma\left(9, \frac12\right)$
 
 ## Algoritmo
 
-Para el algoritmo nos basamos en la implementacion de Monte Carlo del apunte con ligeras modificaciones y en la justificacion teorica de Importance Sampling.
+Para la implementacion de este metodo nos basamos en la de Monte Carlo del apunte con ligeras modificaciones y en la justificacion teorica de Importance Sampling que desarrolamos en la introduccion.
 
-Recordemos que en Monte Carlo, se genera una muestra de $n$ puntos de una variable uniforme continua $U\sim\mathcal U(0,1)$ y luego se evalua la expresion $h(t)f_X(t)$ para cada valor de la muestra. El promedio de las evaluaciones tiende a $\theta$.
+Recordemos que para Monte Carlo, se genera una muestra de $n$ puntos de una variable uniforme continua $U\sim\mathcal U(0,1)$ y luego se evalua la expresion $h(t)f_X(t)$ para cada valor de la muestra. El promedio de las evaluaciones tiende a $\theta$.
 
-Similarmente en el algoritmo, se genera una muestra de $n$ puntos de una variable aleatoria continua $Y$ y luego se evalua la expresion $\frac{h(t)f_X(t)}{g_Y(t)}$ para cada valor de la muestra. El promedio de las evaluaciones tiende a $\theta$.
+Por otro lado, en nuestro algoritmo se genera una muestra de $n$ puntos de una variable aleatoria continua $Y$ y luego se evalua la expresion $\frac{h(t)f_X(t)}{g_Y(t)}$ para cada valor de la muestra. Por la justificacion teorica, el promedio de las evaluaciones sigue tendiendo a $\theta$.
 
-A continuacion presentamos el algoritmo de Importance Sampling. Sean:
+A continuacion presentamos nuestro algoritmo de Importance Sampling en pseudocodigo. Sean:
 - `Y()` un generador de variables $Y$   
 - `g_Y` la funcion de densidad para la distribucion $Y$
 - `f_X` la funcion de densidad para la distribucion original $X$
@@ -48,16 +52,44 @@ def importance_sampling(nsim):
     return integral/nsim
 ```
 
-## Resultados (Falta de Hacer)
+## Resultados
 
-Elegimos las siguientes distribuciones para analizar el algoritmo de Importance Sampling:
-- N ~ Normal(4, 1) 
-- E ~ Exponecial(1/4)
-- G ~ Gamma(4, 1)
+Para comparar la velocidad de convergencia entre los metodos, se realizaron 50 estimaciones con distintas valores de $n$ equidistantes que van desde 10 mil a 500 mil con un incremento de 10 mil por estimacion.
+Definimos una estimacion como: Ejecutar el algoritmo 10 veces para un mismo $n$ y tomar el promedio sobre los valores obtenidos.
+En los siguientes graficos podemos observar la distancia entre dichas estimaciones y el valor real de $\theta$, calculado como el valor absoluto entre la diferencia de ambos. 
 
-Para comparar la velocidad de convergencia entre los metodos, se realizaron 50 estimaciones con distintas cantidades de puntos de muestreo que van del 10mil a 500 mil con un incremento de 10mil por estimacion.
-Definimos una estimacion como: Ejecutar el algoritmo 10 veces para una misma cantidad de puntos de muestro y tomar el promedio sobre los valores obtenidos.
-En el siguiente grafico podemos observar la distancia entre dichas estimaciones y el valor real, calculado como el valor absoluto entre la diferencia de ambos. 
+Cabe destacar que en ambos graficos *Control* se refiere a la estimacion realizada utilizando el metodo de Monte Carlo estandar.
+
+## Ejercicio 1
+
+Para el inciso 1 buscamos aproximar $\theta = P(Z > 3)$ con $Z\sim\mathcal N(0,1)$. Tomamos las siguientes distribuciones para analizar el algoritmo de Importance Sampling:
+- $Normal \sim \mathcal N(4, 1) $
+- $Exponencial \sim \mathcal E(1/4)$
+- $Gamma \sim \Gamma(4, 1)$
+
+![[Ejercicio1_10.png]]
+
+En el grafico podemos observar
+- Tenemos algunos casos extremos, como la Normal en 270.000 que se aproxima mucho al valor real y luego se aleja.
+- Control es la que constantemente mas cerca se encuentra del valor real pero no tiende a acercarse muy rapidamente
+- Gamma a pesar de comenzar mas lejos del valor real tiende a acercarce rapidamente al mismo
+- La exponencial tiene el peor comportamiento de las cuatro, manteniendose bastante alejada y convergiendo lentamente.
+
+---
+
+## Ejercicio 2
+
+Para el inciso 2 tenemos $\theta = P(W > 10)$ con $W\sim\mathcal \Gamma\left(9, \frac12\right)$. Las distribuciones que elegimos fueron:
+- $Normal \sim \mathcal N(11, 1) $
+- $Exponencial \sim \mathcal E(1/11)$
+- $Gamma \sim \Gamma(11, 1)$
+
+![[Ejercicio2_10.png]]
+
+- La control es la peor, siendo la mas lenta y la mas alejada
+- La gamma parece converger rapidamente hacia el valor real
+- La normal compite con la gamma en velocidad de convergencia y comienza mas cerca del valor
+- La exponencial no es la mas lenta pero parece ser erratica
 
 ## Conclusiones (Falta de Hacer)
 
