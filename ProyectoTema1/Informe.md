@@ -60,7 +60,7 @@ En los siguientes graficos podemos observar la distancia entre dichas estimacion
 
 Cabe destacar que en ambos graficos *Control* se refiere a la estimacion realizada utilizando el metodo de Monte Carlo estandar.
 
-## Ejercicio 1
+### Ejercicio 1
 
 Para el inciso 1 buscamos aproximar $\theta = P(Z > 3)$ con $Z\sim\mathcal N(0,1)$. Tomamos las siguientes distribuciones para analizar el algoritmo de Importance Sampling:
 - $Normal \sim \mathcal N(4, 1) $
@@ -69,15 +69,13 @@ Para el inciso 1 buscamos aproximar $\theta = P(Z > 3)$ con $Z\sim\mathcal N(0,1
 
 ![[Ejercicio1_10.png]]
 
-En el grafico podemos observar
+Observaciones:
 - Tenemos algunos casos extremos, como la Normal en 270.000 que se aproxima mucho al valor real y luego se aleja.
 - Control es la que constantemente mas cerca se encuentra del valor real pero no tiende a acercarse muy rapidamente
 - Gamma a pesar de comenzar mas lejos del valor real tiende a acercarce rapidamente al mismo
 - La exponencial tiene el peor comportamiento de las cuatro, manteniendose bastante alejada y convergiendo lentamente.
 
----
-
-## Ejercicio 2
+### Ejercicio 2
 
 Para el inciso 2 tenemos $\theta = P(W > 10)$ con $W\sim\mathcal \Gamma\left(9, \frac12\right)$. Las distribuciones que elegimos fueron:
 - $Normal \sim \mathcal N(11, 1) $
@@ -86,10 +84,11 @@ Para el inciso 2 tenemos $\theta = P(W > 10)$ con $W\sim\mathcal \Gamma\left(9, 
 
 ![[Ejercicio2_10.png]]
 
-- La control es la peor, siendo la mas lenta y la mas alejada
-- La gamma parece converger rapidamente hacia el valor real
-- La normal compite con la gamma en velocidad de convergencia y comienza mas cerca del valor
-- La exponencial no es la mas lenta pero parece ser erratica
+Observaciones:
+- Control es la peor de las estimaciones, siendo la mas lenta en converger y la mas lejana al valor real.
+- Exponencial no es la mas lenta pero parece ser bastante erratica.
+- Gamma parece converger mas rapido que todas las demas hacia el valor real.
+- Normal compite con Gamma en velocidad de convergencia y comienza mas cerca del valor.
 
 ## Conclusiones (Falta de Hacer)
 
