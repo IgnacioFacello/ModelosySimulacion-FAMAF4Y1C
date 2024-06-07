@@ -14,7 +14,7 @@ NORMAL_MU, NORMAL_SIGMA = 11, 1
 EXP_LAMBDA = 1/11
 GAMMA_ALFA, GAMMA_BETA = 11, 1
 SEED = 1567
-TIMES = 10
+TIMES = 50
 
 np.random.seed(SEED)
 
@@ -153,5 +153,5 @@ for k, v in accs.items():
 
 plt.grid()
 plt.legend()
-pylab.show()
-# plt.savefig('Ejercicio2.png')
+#pylab.show()
+plt.savefig('Ejercicio2.png')
