@@ -83,16 +83,17 @@ def muestras(gen):
     ''' 
     t1 = time.perf_counter()
     C = 10_000
-    acc = {}
-    nsim = C
-    acc[nsim] = gen(C)*C
-    for i in range(2,51):
-        anterior, nsim = (i-1)*C, i*C
+    nsim = 0
+    acc = {}                    
+    acc[nsim] = 0               
+    for i in range(1, 51): # Del 10 mil a 500 mil
+        anterior, nsim = (i-1) * C, i * C
         aux = 0
-        for k in range(TIMES):
-            aux += gen(C)*C
+        for _ in range(TIMES):
+            aux += gen(C) * C
         aux = aux / TIMES
         acc[nsim] = acc[anterior] + aux
+    acc.pop(0)
     acc = { k: v/k for k,v in acc.items() }
     t2 = time.perf_counter()
     return acc, t2-t1
@@ -130,10 +131,9 @@ impIII = lambda x : ejercicio1b(n=x,
 acc_impIII, t = muestras(impIII)
 print(f'Completado en {t} segundos')
 
-
 T2 = time.perf_counter()
 print(f'Timepo: {T2-T1} segundos')
-# %%
+
 # Grafica Comparativa LINEAS
 plt.figure(figsize=(20,4), layout='tight')
 plt.xticks(EQUID, rotation=45)
