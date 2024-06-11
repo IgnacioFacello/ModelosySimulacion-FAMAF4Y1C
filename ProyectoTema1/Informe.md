@@ -3,8 +3,6 @@ Integrantes:
 - Facello Ignacio
 - Nieto Manuel
 
-https://www.youtube.com/watch?v=C3p2wI4RAi8
-
 ## Introduccion
 Los métodos tradicionales de integración por el metodo de Monte Carlo no siempre son los más eficientes.
 El metodo de muestreo de importancia o Importance Sampling es una forma de hacer que las simulaciones de Monte Carlo converjan más rápido.
@@ -78,6 +76,9 @@ Observaciones:
 | Gamma       | Rapida                    | Comienza lejos y se acerca rapidamente al valor real |
 | Exponencial | Lenta                     | Lejana al valor real y muy lenta |
 
+Conclusiones:
+
+
 ### Ejercicio 2
 
 Para el inciso 2 tenemos $\theta = P(W > 10)$ con $W\sim\mathcal \Gamma\left(9, \frac12\right)$. Las distribuciones que elegimos fueron:
@@ -97,3 +98,9 @@ Observaciones:
 | Exponencial | Media                     | La distancia de las aproximaciones varia mucho a lo largo del experimento |
 
 ## Conclusiones (Falta de Hacer)
+
+Como suponiamos originalmente, el metodo de Importance Sampling no es inherentemente mejor que el metodo de Monte Carlo tradicional o viceversa. 
+
+En el inciso 1 vemos que para la mayoria de las distribuciones elegidas para Importance Sampling tienen una efectividad menor que la de Monte Carlo tradicional. Suponemos que esto se debe a que las varianzas del metodo de IS es mayor que la de Monte Carlo^{[1](https://www.youtube.com/watch?v=C3p2wI4RAi8)}. 
+
+Por otra parte, en el inciso 2, observamos que con todas las distribuciones elegidas el metodo de Is tiene una efectividad mayor o igual a la de Monte Carlo tradicional. 
