@@ -58,7 +58,7 @@ Para comparar la velocidad de convergencia entre los metodos, se realizaron 50 e
 Definimos una estimacion como: Ejecutar el algoritmo 10 veces para un mismo $n$ y tomar el promedio sobre los valores obtenidos.
 En los siguientes graficos podemos observar la distancia entre dichas estimaciones y el valor real de $\theta$, calculado como el valor absoluto entre la diferencia de ambos. 
 
-Cabe destacar que en ambos graficos *Control* se refiere a la estimacion realizada utilizando el metodo de Monte Carlo estandar.
+Cabe destacar que en ambos graficos, *Control* se refiere a la estimacion realizada utilizando el metodo de Monte Carlo estandar.
 
 ### Ejercicio 1
 
@@ -70,10 +70,13 @@ Para el inciso 1 buscamos aproximar $\theta = P(Z > 3)$ con $Z\sim\mathcal N(0,1
 ![[Ejercicio1_10.png]]
 
 Observaciones:
-- Tenemos algunos casos extremos, como la Normal en 270.000 que se aproxima mucho al valor real y luego se aleja.
-- Control es la que constantemente mas cerca se encuentra del valor real pero no tiende a acercarse muy rapidamente
-- Gamma a pesar de comenzar mas lejos del valor real tiende a acercarce rapidamente al mismo
-- La exponencial tiene el peor comportamiento de las cuatro, manteniendose bastante alejada y convergiendo lentamente.
+
+| Caso        | Velocidad de Convergencia | Observaciones |
+| ----------- | ------------------------- | ------------- |
+| Control     | Media                     | Cercana al valor real y constante |
+| Normal      | Lenta                     | Lenta pero en un caso tiene la menor distancia |
+| Gamma       | Rapida                    | Comienza lejos y se acerca rapidamente al valor real |
+| Exponencial | Lenta                     | Lejana al valor real y muy lenta |
 
 ### Ejercicio 2
 
@@ -85,11 +88,12 @@ Para el inciso 2 tenemos $\theta = P(W > 10)$ con $W\sim\mathcal \Gamma\left(9, 
 ![[Ejercicio2_10.png]]
 
 Observaciones:
-- Control es la peor de las estimaciones, siendo la mas lenta en converger y la mas lejana al valor real.
-- Exponencial no es la mas lenta pero parece ser bastante erratica.
-- Gamma parece converger mas rapido que todas las demas hacia el valor real.
-- Normal compite con Gamma en velocidad de convergencia y comienza mas cerca del valor.
+
+| Caso        | Velocidad de Convergencia | Observaciones |
+| ----------- | ------------------------- | ------------- |
+| Control     | Lenta                     | Constante y lejana al valor real |
+| Normal      | Rapida                    | Mas lenta que la Gamma, aunque es la que mas se acerco al valor real |
+| Gamma       | Rapida                    | Comienza lejos del valor real pero converge muy rapidamente |
+| Exponencial | Media                     | La distancia de las aproximaciones varia mucho a lo largo del experimento |
 
 ## Conclusiones (Falta de Hacer)
-
-
