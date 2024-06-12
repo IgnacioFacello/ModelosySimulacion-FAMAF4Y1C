@@ -10,11 +10,11 @@ import time
 # Constantes
 EQUID = np.arange(10_000, 500_001, 10_000)  # Lista de 50 numeros equidistantes entre 0 y 500.000
 REAL = 1 - gamma(a=9, scale=0.5).cdf(10)    # Valor de P(S >= 10) con S ~ Gamma(9, 1/2)
-NORMAL_MU, NORMAL_SIGMA = 11, 1
+NORMAL_MU, NORMAL_SIGMA = 10, 1
 EXP_LAMBDA = 1/11
-GAMMA_ALFA, GAMMA_BETA = 11, 1
+GAMMA_ALFA, GAMMA_BETA = 100, 0.01
 SEED = 1567
-TIMES = 50
+TIMES = 10
 
 np.random.seed(SEED)
 
@@ -43,6 +43,12 @@ class Gamma():
     def dens_prob(alfa, beta, y):           # alfa debe ser natural
         return 1/fact(alfa-1) * (beta ** (-alfa)) * (y ** (alfa - 1)) * np.exp(-y/beta)
     
+def varianza_muestral(xs, media): 
+    varianza = 0
+    for x in xs:
+        varianza += (x - media) ** 2
+    return varianza/(len(xs) - 1)  
+    
 # ===================================== Ejercicio A ===================================================
 
 def ejercicio2a(n):
@@ -50,9 +56,14 @@ def ejercicio2a(n):
     '''
     acc = 0
     ys = uniform.rvs(size=n)                # Muestra de n Uniformes U(0,1)
+    xs = []
     for y in ys:
-        acc += Gamma.dens_prob(9, 1/2, 1/y + 9)/(y**2)
-    return acc/n
+        x = Gamma.dens_prob(9, 1/2, 1/y + 9)/(y**2)
+        acc += x
+        xs.append(x)
+    media = acc/n
+    varianza = varianza_muestral(xs, media)
+    return media, varianza
 
 # ===================================== Ejercicio B ===================================================
 
@@ -69,9 +80,14 @@ def ejercicio2b(n, fun_imp, fun_gen):       # Agregamos la entrada fun_gen para 
     '''
     acc = 0
     ys = fun_gen(n)                         # Muestra de n variables Y
+    xs = []
     for y in ys:
-        acc += Gamma.dens_prob(9, 1/2, y) * indicadora(y) / fun_imp(y)
-    return acc/n
+        x = Gamma.dens_prob(9, 1/2, y) * indicadora(y) / fun_imp(y)
+        acc += x
+        xs.append(x)
+    media = acc/n
+    varianza = varianza_muestral(xs, media)
+    return media, varianza
 
 # ===================================== Graficas ===================================================
 
@@ -84,25 +100,30 @@ def muestras(gen): # Gen es ejercicioA y ejercicioB
     t1 = time.perf_counter()
     C = 10_000
     nsim = 0
-    acc = {}                    
-    acc[nsim] = 0               
-    for i in range(1, 51): # Del 10 mil a 500 mil
+    acc1 = {}
+    acc2 = {}                        
+    acc1[nsim] = 0
+    for i in range(1, 51 ): # Del 10 mil a 500 mil
         anterior, nsim = (i-1) * C, i * C
-        aux = 0
+        media = 0
+        varianza = 0
         for _ in range(TIMES):
-            aux += gen(C) * C
-        aux = aux / TIMES
-        acc[nsim] = acc[anterior] + aux
-    acc.pop(0)
-    acc = { k: v/k for k,v in acc.items() }
+            aux = gen(C)
+            media += aux[0] * C
+            varianza += aux[1]
+        media = media / TIMES
+        acc1[nsim] = acc1[anterior] + media
+        acc2[nsim] = varianza / TIMES
+    acc1.pop(0)
+    acc1 = { k: v/k for k,v in acc1.items() }
     t2 = time.perf_counter()
-    return acc, t2-t1
+    return acc1, acc2, t2-t1
 
 # Generacion de aproximaciones
 # Montecarlo
 print('Generando muestra usando Montecarlo Estandar... ')
 mtc = lambda x : ejercicio2a(x)
-acc_mtc, t = muestras(mtc)
+acc1_mtc, acc2_mtc, t = muestras(mtc)
 print(f'Completado en {t} segundos')
 
 # Importance Sampling: Normal
@@ -111,7 +132,7 @@ impI = lambda x : ejercicio2b(n=x,
             fun_imp=lambda y : Normal.dens_prob(NORMAL_MU, NORMAL_SIGMA, y), 
             fun_gen=lambda n : Normal.generate(NORMAL_MU, NORMAL_SIGMA, n)
             )
-acc_impI, t = muestras(impI)
+acc1_impI, acc2_impI, t = muestras(impI)
 print(f'Completado en {t} segundos')
 
 # Importance Sampling: Exponencial
@@ -119,7 +140,7 @@ print(f'Generando muestra usando IS: Exponencial {EXP_LAMBDA}...')
 impII = lambda x: ejercicio2b(n=x,
     fun_imp=lambda y : Exponential.dens_prob(EXP_LAMBDA, y),
     fun_gen=lambda n : Exponential.generate(EXP_LAMBDA, n))
-acc_impII, t = muestras(impII)
+acc1_impII, acc2_impII, t = muestras(impII)
 print(f'Completado en {t} segundos')
 
 # Importance Sampling: Gamma
@@ -128,24 +149,24 @@ impIII = lambda x : ejercicio2b(n=x,
     fun_imp=lambda y : Gamma.dens_prob(GAMMA_ALFA, GAMMA_BETA, y), 
     fun_gen=lambda n : Gamma.generate(GAMMA_ALFA, GAMMA_BETA, n)
     )
-acc_impIII, t = muestras(impIII)
+acc1_impIII, acc2_impIII, t = muestras(impIII)
 print(f'Completado en {t} segundos')
 
 T2 = time.perf_counter()
-print(f'Timepo: {T2-T1} segundos')
+print(f'Tiempo: {T2-T1} segundos')
 
-# Grafica Comparativa LINEAS
+# Grafica Comparativa Media LINEAS
 plt.figure(figsize=(20,4), layout='tight')
 plt.xticks(EQUID, rotation=45)
 plt.yscale('log')
-plt.xlabel('Nro de Muestras')
+plt.xlabel('Tamaño muestra')
 plt.ylabel('Distancia')
 
 accs = {
-    'Control': { k: np.abs(v - REAL) for k, v in acc_mtc.items() },
-    'Normal': { k: np.abs(v - REAL) for k, v in acc_impI.items() },
-    'Exponencial': { k: np.abs(v - REAL) for k, v in acc_impII.items() },
-    'Gamma': { k: np.abs(v - REAL) for k, v in acc_impIII.items() },
+    'Control': { k: np.abs(v - REAL) for k, v in acc1_mtc.items() },
+    'Normal': { k: np.abs(v - REAL) for k, v in acc1_impI.items() },
+    'Exponencial': { k: np.abs(v - REAL) for k, v in acc1_impII.items() },
+    'Gamma': { k: np.abs(v - REAL) for k, v in acc1_impIII.items() },
 }
 
 for k, v in accs.items():
@@ -153,5 +174,25 @@ for k, v in accs.items():
 
 plt.grid()
 plt.legend()
-#pylab.show()
-plt.savefig('Ejercicio2.png')
+pylab.show()
+
+# Grafica Comparativa Varianza LINEAS
+plt.figure(figsize=(20,4), layout='tight')
+plt.xticks(EQUID, rotation=45)
+plt.yscale('log')
+plt.xlabel('Tamaño muestra')
+plt.ylabel('Varianza')
+
+accs = {
+    'Control': { k: v for k, v in acc2_mtc.items() },
+    'Normal': { k: v for k, v in acc2_impI.items() },
+    'Exponencial': { k: v for k, v in acc2_impII.items() },
+    'Gamma': { k: v for k, v in acc2_impIII.items() },
+}
+
+for k, v in accs.items():
+    plt.plot(v.keys(), v.values(), label=k)
+
+plt.grid()
+plt.legend()
+pylab.show()
