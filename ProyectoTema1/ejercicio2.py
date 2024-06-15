@@ -177,35 +177,6 @@ T2 = time.perf_counter()
 print(f'Tiempo total: {round(T2-T1,0)} segundos')
 
 # ===================================== Graficas ===================================================
-# comparacion fdm
-# BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR
-# BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR
-# BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR
-# BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR BORRAR
-
-xs_gt10 = np.arange(9,50,0.1)
-real = [ gamma(a=9, scale=1/2).pdf(x) for x in xs_gt10 ]
-
-fig, ax = plt.subplots(2,2, sharex='all', sharey='all')
-
-ax[0][0].set_title('Control')
-ax[0][0].plot(xs_gt10, [ uniform.pdf(1/x) for x in xs_gt10 ])
-ax[0][0].plot(xs_gt10, real)
-
-ax[0][1].set_title(f'Normal({NORMAL_MU}, {NORMAL_SIGMA})')
-ax[0][1].plot(xs_gt10, [ NORMAL.funcion_densidad_probabilidad(x) for x in xs_gt10 ])
-ax[0][1].plot(xs_gt10, real)
-
-ax[1][0].set_title(f'Exponencial({round(EXP_LAMBDA, 4)})')
-ax[1][0].plot(xs_gt10, [ EXPONENTIAL.funcion_densidad_probabilidad(x) for x in xs_gt10 ])
-ax[1][0].plot(xs_gt10, real)
-
-ax[1][1].set_title(f'Gamma({GAMMA_ALFA}, {GAMMA_BETA})')
-ax[1][1].plot(xs_gt10, [ GAMMA.funcion_densidad_probabilidad(x) for x in xs_gt10 ])
-ax[1][1].plot(xs_gt10, real)
-
-plt.show()
-
 # Grafica Comparativa Media VARIANZAS
 nsim_var = 500
 varianzas = {
