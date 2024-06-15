@@ -6,3 +6,4 @@ pyvenv.cfg
 share
 __pycache__
 *_manu.py
+.obsidian
