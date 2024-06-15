@@ -8,7 +8,7 @@ import time
 
 # Constantes
 STEP = 10_000
-EQUID = np.arange(10_000, 500_001, STEP)  # Lista de 50 numeros equidistantes entre 0 y 500.000
+EQUID = np.arange(10_000, 500_001, STEP)    # Lista de 50 numeros equidistantes entre 0 y 500.000
 REAL = 1 - gamma(a=9, scale=0.5).cdf(10)    # Valor de P(S >= 10) con S ~ Gamma(9, 1/2)
 TIMES_TO_AVERAGE = 10
 SEED = 1567
@@ -52,7 +52,7 @@ class Gamma():
     def generador(self, size):
         return gamma.rvs(size=size, a=self.alfa, scale=self.beta)
 
-    def funcion_densidad_probabilidad(self, y):           # alfa debe ser natural
+    def funcion_densidad_probabilidad(self, y):     # alfa debe ser natural
         return 1/fact(self.alfa-1) * (self.beta ** (-self.alfa)) * (y ** (self.alfa - 1)) * np.exp(-y/self.beta)
     
 def varianza_muestral(xs, media): 
@@ -72,7 +72,7 @@ def ejercicio2a(n):
     ''' Calcular la varianza del estimador para n valores
     '''
     acc = 0
-    ys = uniform.rvs(size=n)                # Muestra de n Uniformes U(0,1)
+    ys = uniform.rvs(size=n)                        # Muestra de n Uniformes U(0,1)
     xs = []
     for y in ys:
         x = GAMMA_S.funcion_densidad_probabilidad(1/y + 9)/(y**2)
@@ -87,7 +87,7 @@ def ejercicio2a(n):
 def importance_sampling_valores(n, X_fdp, ind, Y):
     ''' Muestras para el metodo de Importance Sampling
     '''
-    ys = Y.generador(n)                         # Muestra de n variables aleatorias Y
+    ys = Y.generador(n)                             # Muestra de n variables aleatorias Y
     rs = []
     for y in ys:
         x =  X_fdp(y) * ind(y) / Y.funcion_densidad_probabilidad(y)
@@ -149,7 +149,7 @@ T1 = time.perf_counter()
 mtc = lambda x : ejercicio2a(x)[0]
 acc1_mtc = medir_tiempo(
     lambda : muestras(mtc), 
-    "Montecarlo Estandar"
+    "Monte Carlo Estandar"
     )
 
 # Importance Sampling: Normal
@@ -188,7 +188,7 @@ varianzas = {
 
 plt.xticks(EQUID, rotation=45)
 plt.yscale('log')
-plt.xlabel('Distribucion')
+plt.xlabel('Distribución')
 plt.ylabel('Varianza')
 
 print('\nVarianzas')
@@ -196,7 +196,7 @@ for i, (k, v) in enumerate(varianzas.items()):
     print(f'\t{k}: {v}')
     plt.bar(k, v, label=k)
 
-plt.title("Varianzas2")
+plt.title("Varianzas Ej2")
 plt.legend()
 pylab.show()
 
@@ -217,7 +217,7 @@ plt.ylabel('Distancia')
 for k, v in aproximaciones.items():
     plt.plot(v.keys(), v.values(), label=k)
     
-plt.title("Ejercicio2")
+plt.title("Distancias Ej2")
 plt.grid()
 plt.legend()
 pylab.show()

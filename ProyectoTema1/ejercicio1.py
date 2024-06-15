@@ -8,7 +8,7 @@ import time
 
 # Constantes
 STEP = 10_000
-EQUID = np.arange(10_000, 500_001, STEP) # Lista de 50 numeros equidistantes entre 0 y 500.000
+EQUID = np.arange(10_000, 500_001, STEP)    # Lista de 50 numeros equidistantes entre 0 y 500.000
 REAL = 1 - norm.cdf(3)                      # Valor de P(X >= 3) con X ~ N(0,1)
 SEED = 1567
 TIMES_TO_AVERAGE = 10
@@ -72,7 +72,7 @@ def ejercicio1a(n):
     ''' Calcular la varianza del estimador para n valores
     '''
     acc = 0
-    ys = uniform.rvs(size=n)                # Muestra de n Uniformes U(0,1)
+    ys = uniform.rvs(size=n)                    # Muestra de n Uniformes U(0,1)
     xs = []
     for y in ys:
         x = NORMAL_EST.funcion_densidad_probabilidad(1/y + 2)/(y**2)
@@ -150,7 +150,7 @@ T1 = time.perf_counter()
 mtc = lambda x : ejercicio1a(x)[0]
 acc1_mtc = medir_tiempo(
     lambda : muestras(mtc), 
-    "Montecarlo Estandar"
+    "Monte Carlo Estandar"
     )
 
 # Importance Sampling: Normal
@@ -190,7 +190,7 @@ varianzas = {
 
 plt.xticks(EQUID, rotation=45)
 plt.yscale('log')
-plt.xlabel('Distribucion')
+plt.xlabel('Distribución')
 plt.ylabel('Varianza')
 
 print('\nVarianzas')
@@ -198,7 +198,7 @@ for i, (k, v) in enumerate(varianzas.items()):
     print(f'\t{k}: {v}')
     plt.bar(k, v, label=k)
 
-plt.title("Varianzas1")
+plt.title("Varianzas Ej1")
 plt.legend()
 pylab.show()
 
@@ -219,7 +219,7 @@ plt.ylabel('Distancia')
 for k, v in aproximaciones.items():
     plt.plot(v.keys(), v.values(), label=k)
     
-plt.title("Ejercicio1")
+plt.title("Distancias Ej 1")
 plt.grid()
 plt.legend()
 pylab.show()
